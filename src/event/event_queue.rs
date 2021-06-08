@@ -1,3 +1,6 @@
+use std::sync::atomic::{self, AtomicUsize, Ordering};
+use std::sync::Arc;
+
 use neon_runtime::raw::Env;
 use neon_runtime::tsfn::ThreadsafeFunction;
 
@@ -7,6 +10,9 @@ use crate::result::NeonResult;
 type Callback = Box<dyn FnOnce(Env) + Send + 'static>;
 
 /// Channel for scheduling Rust closures to execute on the JavaScript main thread.
+///
+/// Cloning a `Channel` will create a new channel that shares a backing queue for
+/// events.
 ///
 /// # Example
 ///
@@ -50,7 +56,7 @@ type Callback = Box<dyn FnOnce(Env) + Send + 'static>;
 /// ```
 
 pub struct Channel {
-    tsfn: ThreadsafeFunction<Callback>,
+    state: Arc<ChannelState>,
     has_ref: bool,
 }
 
@@ -65,9 +71,13 @@ impl Channel {
     /// main thread
     pub fn new<'a, C: Context<'a>>(cx: &mut C) -> Self {
         let tsfn = unsafe { ThreadsafeFunction::new(cx.env().to_raw(), Self::callback) };
+        let state = ChannelState {
+            tsfn,
+            ref_count: AtomicUsize::new(1),
+        };
 
         Self {
-            tsfn,
+            state: Arc::new(state),
             has_ref: true,
         }
     }
@@ -75,9 +85,25 @@ impl Channel {
     /// Allow the Node event loop to exit while this `Channel` exists.
     /// _Idempotent_
     pub fn unref<'a, C: Context<'a>>(&mut self, cx: &mut C) -> &mut Self {
+        // Already unreferenced
+        if !self.has_ref {
+            return self;
+        }
+
         self.has_ref = false;
 
-        unsafe { self.tsfn.unref(cx.env().to_raw()) }
+        // Only `unref` when going from `0` to `1`
+        if self.state.ref_count.fetch_sub(1, Ordering::Release) != 1 {
+            return self;
+        }
+
+        // This fence is needed to prevent reordering of use of the tsfn and unreferencing
+        atomic::fence(Ordering::Acquire);
+
+        // Unref the tsfn
+        unsafe {
+            self.state.tsfn.unref(cx.env().to_raw());
+        }
 
         self
     }
@@ -85,9 +111,22 @@ impl Channel {
     /// Prevent the Node event loop from exiting while this `Channel` exists. (Default)
     /// _Idempotent_
     pub fn reference<'a, C: Context<'a>>(&mut self, cx: &mut C) -> &mut Self {
+        // Already referenced
+        if self.has_ref {
+            return self;
+        }
+
         self.has_ref = true;
 
-        unsafe { self.tsfn.reference(cx.env().to_raw()) }
+        // Increasing the reference counter can always be done with memory_order_relaxed
+        // since `&self` guarantees the `tsfn` exists and won't be unreferenced.
+        self.state.ref_count.fetch_add(1, Ordering::Relaxed);
+
+        // This is idempotent and we can always call it
+        // TODO: Should this need to be optimized to avoid?
+        unsafe {
+            self.state.tsfn.reference(cx.env().to_raw());
+        }
 
         self
     }
@@ -117,7 +156,7 @@ impl Channel {
             });
         });
 
-        self.tsfn.call(callback, None).map_err(|_| SendError)
+        self.state.tsfn.call(callback, None).map_err(|_| SendError)
     }
 
     /// Returns a boolean indicating if this `Channel` will prevent the Node event
@@ -138,6 +177,68 @@ impl Channel {
     }
 }
 
+impl Clone for Channel {
+    fn clone(&self) -> Self {
+        // Not referenced, we can simply clone the fields
+        if !self.has_ref {
+            return Self {
+                state: Arc::clone(&self.state),
+                has_ref: false,
+            };
+        }
+
+        // Only need to increase the ref count since the tsfn is already referenced
+        // Increasing the reference counter can always be done with memory_order_relaxed
+        // since `&self` guarantees the `tsfn` exists and won't be unreferenced.
+        self.state.ref_count.fetch_add(1, Ordering::Relaxed);
+
+        Self {
+            state: Arc::clone(&self.state),
+            has_ref: true,
+        }
+    }
+}
+
+impl Drop for Channel {
+    fn drop(&mut self) {
+        // Not a referenced event queue
+        if !self.has_ref {
+            return;
+        }
+
+        // This is the last copy, let it will be released
+        if Arc::strong_count(&self.state) == 1 {
+            return;
+        }
+
+        // Only `unref` when going from `0` to `1`
+        if self.state.ref_count.fetch_sub(1, Ordering::Release) != 1 {
+            return;
+        }
+
+        // This fence is needed to prevent reordering of use of the tsfn and unreferencing
+        atomic::fence(Ordering::Acquire);
+
+        let state = Arc::clone(&self.state);
+
+        self.send(move |cx| {
+            use crate::context::internal::ContextInternal;
+
+            // The reference count may have gone up since checking
+            if state.ref_count.load(Ordering::Acquire) != 0 {
+                return Ok(());
+            }
+
+            // Unref the tsfn
+            unsafe {
+                state.tsfn.unref(cx.env().to_raw());
+            }
+
+            Ok(())
+        });
+    }
+}
+
 /// Error indicating that a closure was unable to be scheduled to execute on the event loop.
 pub struct SendError;
 
@@ -154,3 +255,8 @@ impl std::fmt::Debug for SendError {
 }
 
 impl std::error::Error for SendError {}
+
+struct ChannelState {
+    tsfn: ThreadsafeFunction<Callback>,
+    ref_count: AtomicUsize,
+}
