@@ -82,6 +82,7 @@ pub(crate) mod error;
 pub(crate) mod internal;
 pub(crate) mod utf8;
 
+#[cfg(feature = "legacy-runtime")]
 mod legacy;
 
 use self::internal::{FunctionCallback, ValueInternal};
@@ -107,6 +108,7 @@ pub use self::boxed::JsBox;
 #[cfg(feature = "napi-5")]
 pub use self::date::{DateError, DateErrorKind, JsDate};
 pub use self::error::JsError;
+#[cfg(feature = "legacy-runtime")]
 pub use self::legacy::binary::{BinaryData, BinaryViewType};
 
 pub(crate) fn build<'a, T: Managed, F: FnOnce(&mut raw::Local) -> bool>(

@@ -1,5 +1,6 @@
 //! Convenience module for the most common Neon imports.
 
+#[cfg(feature = "legacy-runtime")]
 pub use crate::borrow::{Borrow, BorrowMut};
 pub use crate::context::{
     CallContext, CallKind, ComputeContext, Context, ExecuteContext, FunctionContext, MethodContext,
@@ -22,9 +23,11 @@ pub use crate::register_module;
 pub use crate::result::{JsResult, JsResultExt, NeonResult};
 #[cfg(feature = "legacy-runtime")]
 pub use crate::task::Task;
+#[cfg(feature = "legacy-runtime")]
+pub use crate::types::BinaryData;
 pub use crate::types::{
-    BinaryData, JsArray, JsArrayBuffer, JsBoolean, JsBuffer, JsError, JsFunction, JsNull, JsNumber,
-    JsObject, JsString, JsUndefined, JsValue, Value,
+    JsArray, JsArrayBuffer, JsBoolean, JsBuffer, JsError, JsFunction, JsNull, JsNumber, JsObject,
+    JsString, JsUndefined, JsValue, Value,
 };
 #[cfg(feature = "napi-1")]
 pub use crate::{

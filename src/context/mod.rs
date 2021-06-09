@@ -148,7 +148,9 @@
 
 pub(crate) mod internal;
 
+#[cfg(feature = "legacy-runtime")]
 pub use crate::borrow::Lock;
+#[cfg(feature = "legacy-runtime")]
 use crate::borrow::{Borrow, BorrowMut, Ref, RefMut};
 use crate::context::internal::Env;
 #[cfg(all(feature = "napi-4", feature = "event-queue-api"))]
@@ -272,6 +274,7 @@ pub enum CallKind {
 ///
 /// A context has a lifetime `'a`, which ensures the safety of handles managed by the JS garbage collector. All handles created during the lifetime of a context are kept alive for that duration and cannot outlive the context.
 pub trait Context<'a>: ContextInternal<'a> {
+    #[cfg(feature = "legacy-runtime")]
     /// Lock the JavaScript engine, returning an RAII guard that keeps the lock active as long as the guard is alive.
     ///
     /// If this is not the currently active context (for example, if it was used to spawn a scoped context with `execute_scoped` or `compute_scoped`), this method will panic.
@@ -280,6 +283,7 @@ pub trait Context<'a>: ContextInternal<'a> {
         Lock::new(self.env())
     }
 
+    #[cfg(feature = "legacy-runtime")]
     /// Convenience method for locking the JavaScript engine and borrowing a single JS value's internals.
     ///
     /// # Example:
@@ -310,6 +314,7 @@ pub trait Context<'a>: ContextInternal<'a> {
         f(contents)
     }
 
+    #[cfg(feature = "legacy-runtime")]
     /// Convenience method for locking the JavaScript engine and mutably borrowing a single JS value's internals.
     ///
     /// # Example:
