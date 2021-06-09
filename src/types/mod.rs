@@ -82,6 +82,8 @@ pub(crate) mod error;
 pub(crate) mod internal;
 pub(crate) mod utf8;
 
+mod legacy;
+
 use self::internal::{FunctionCallback, ValueInternal};
 use self::utf8::Utf8;
 use crate::context::internal::Env;
@@ -99,12 +101,13 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::os::raw::c_void;
 
-pub use self::binary::{BinaryData, BinaryViewType, JsArrayBuffer, JsBuffer};
+pub use self::binary::{JsArrayBuffer, JsBuffer};
 #[cfg(feature = "napi-1")]
 pub use self::boxed::JsBox;
 #[cfg(feature = "napi-5")]
 pub use self::date::{DateError, DateErrorKind, JsDate};
 pub use self::error::JsError;
+pub use self::legacy::binary::{BinaryData, BinaryViewType};
 
 pub(crate) fn build<'a, T: Managed, F: FnOnce(&mut raw::Local) -> bool>(
     env: Env,

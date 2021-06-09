@@ -148,7 +148,7 @@
 
 pub(crate) mod internal;
 
-use crate::borrow::internal::Ledger;
+pub use crate::borrow::Lock;
 use crate::borrow::{Borrow, BorrowMut, Ref, RefMut};
 use crate::context::internal::Env;
 #[cfg(all(feature = "napi-4", feature = "event-queue-api"))]
@@ -175,7 +175,6 @@ use neon_runtime::raw;
 #[cfg(feature = "napi-1")]
 use smallvec::SmallVec;
 use std;
-use std::cell::RefCell;
 use std::convert::Into;
 use std::marker::PhantomData;
 use std::os::raw::c_void;
@@ -265,27 +264,6 @@ impl CallbackInfo<'_> {
 pub enum CallKind {
     Construct,
     Call,
-}
-
-/// A temporary lock of an execution context.
-///
-/// While a lock is alive, no JavaScript code can be executed in the execution context.
-///
-/// Objects that support the `Borrow` and `BorrowMut` traits can be inspected while the context is locked by passing a reference to a `Lock` to their methods.
-pub struct Lock<'a> {
-    pub(crate) ledger: RefCell<Ledger>,
-    pub(crate) env: Env,
-    phantom: PhantomData<&'a ()>,
-}
-
-impl<'a> Lock<'a> {
-    fn new(env: Env) -> Self {
-        Lock {
-            ledger: RefCell::new(Ledger::new()),
-            env,
-            phantom: PhantomData,
-        }
-    }
 }
 
 /// An _execution context_, which represents the current state of a thread of execution in the JavaScript engine.
