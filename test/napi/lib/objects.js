@@ -44,17 +44,17 @@ describe('JsObject', function() {
     assert.equal(addon.read_array_buffer_with_lock(b, 3), 88888888);
   });
 
-  it.skip('correctly reads an ArrayBuffer using the borrow API', function() {
-    var b = new ArrayBuffer(16);
-    var a = new Uint32Array(b);
+  it('correctly reads an ArrayBuffer using the borrow API', function() {
+    var b = new ArrayBuffer(4);
+    var a = new Uint8Array(b);
     a[0] = 49;
     a[1] = 135;
     a[2] = 11;
-    a[3] = 89898989;
+    a[3] = 237;
     assert.equal(addon.read_array_buffer_with_borrow(b, 0), 49);
     assert.equal(addon.read_array_buffer_with_borrow(b, 1), 135);
     assert.equal(addon.read_array_buffer_with_borrow(b, 2), 11);
-    assert.equal(addon.read_array_buffer_with_borrow(b, 3), 89898989);
+    assert.equal(addon.read_array_buffer_with_borrow(b, 3), 237);
   });
 
   it.skip('correctly writes to an ArrayBuffer using the lock API', function() {
@@ -69,16 +69,16 @@ describe('JsObject', function() {
     assert.equal((new Uint32Array(b))[3], 99991111);
   });
 
-  it.skip('correctly writes to an ArrayBuffer using the borrow_mut API', function() {
-    var b = new ArrayBuffer(16);
-    addon.write_array_buffer_with_borrow_mut(b, 0, 434);
-    assert.equal((new Uint32Array(b))[0], 434);
+  it('correctly writes to an ArrayBuffer using the borrow_mut API', function() {
+    var b = new ArrayBuffer(4);
+    addon.write_array_buffer_with_borrow_mut(b, 0, 43);
+    assert.equal((new Uint8Array(b))[0], 43);
     addon.write_array_buffer_with_borrow_mut(b, 1, 100);
-    assert.equal((new Uint32Array(b))[1], 100);
+    assert.equal((new Uint8Array(b))[1], 100);
     addon.write_array_buffer_with_borrow_mut(b, 2, 22);
-    assert.equal((new Uint32Array(b))[2], 22);
-    addon.write_array_buffer_with_borrow_mut(b, 3, 400100);
-    assert.equal((new Uint32Array(b))[3], 400100);
+    assert.equal((new Uint8Array(b))[2], 22);
+    addon.write_array_buffer_with_borrow_mut(b, 3, 243);
+    assert.equal((new Uint8Array(b))[3], 243);
   });
 
   it('gets a 16-byte, uninitialized Buffer', function() {
@@ -117,16 +117,12 @@ describe('JsObject', function() {
     assert.equal(addon.read_buffer_with_lock(b, 3), 189189);
   });
 
-  it.skip('correctly reads a Buffer using the borrow API', function() {
-    var b = Buffer.allocUnsafe(16);
-    b.writeUInt32LE(149,      0);
-    b.writeUInt32LE(2244,     4);
-    b.writeUInt32LE(707,      8);
-    b.writeUInt32LE(22914478, 12);
+  it('correctly reads a Buffer using the borrow API', function() {
+    var b = Buffer.from([149, 224, 70, 229]);
     assert.equal(addon.read_buffer_with_borrow(b, 0), 149);
-    assert.equal(addon.read_buffer_with_borrow(b, 1), 2244);
-    assert.equal(addon.read_buffer_with_borrow(b, 2), 707);
-    assert.equal(addon.read_buffer_with_borrow(b, 3), 22914478);
+    assert.equal(addon.read_buffer_with_borrow(b, 1), 224);
+    assert.equal(addon.read_buffer_with_borrow(b, 2), 70);
+    assert.equal(addon.read_buffer_with_borrow(b, 3), 229);
   });
 
   it.skip('correctly writes to a Buffer using the lock API', function() {
@@ -142,17 +138,16 @@ describe('JsObject', function() {
     assert.equal(b.readUInt32LE(12), 421600);
   });
 
-  it.skip('correctly writes to a Buffer using the borrow_mut API', function() {
-    var b = Buffer.allocUnsafe(16);
-    b.fill(0);
+  it('correctly writes to a Buffer using the borrow_mut API', function() {
+    var b = Buffer.alloc(4);
     addon.write_buffer_with_borrow_mut(b, 0, 16);
-    assert.equal(b.readUInt32LE(0), 16);
-    addon.write_buffer_with_borrow_mut(b, 1, 16000001);
-    assert.equal(b.readUInt32LE(4), 16000001);
+    assert.equal(b[0], 16);
+    addon.write_buffer_with_borrow_mut(b, 1, 100);
+    assert.equal(b[1], 100);
     addon.write_buffer_with_borrow_mut(b, 2, 232);
-    assert.equal(b.readUInt32LE(8), 232);
-    addon.write_buffer_with_borrow_mut(b, 3, 66012);
-    assert.equal(b.readUInt32LE(12), 66012);
+    assert.equal(b[2], 232);
+    addon.write_buffer_with_borrow_mut(b, 3, 55);
+    assert.equal(b[3], 55);
   });
 
   it('returns only own properties from get_own_property_names', function() {

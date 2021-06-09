@@ -40,8 +40,12 @@ pub fn read_array_buffer_with_lock(_: FunctionContext) -> JsResult<JsNumber> {
     todo!()
 }
 
-pub fn read_array_buffer_with_borrow(_: FunctionContext) -> JsResult<JsNumber> {
-    todo!()
+pub fn read_array_buffer_with_borrow(mut cx: FunctionContext) -> JsResult<JsNumber> {
+    let buf = cx.argument::<JsArrayBuffer>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = buf.as_slice(&cx)[i];
+
+    Ok(cx.number(n as f64))
 }
 
 pub fn sum_array_buffer_with_borrow(_: FunctionContext) -> JsResult<JsNumber> {
@@ -52,8 +56,14 @@ pub fn write_array_buffer_with_lock(_: FunctionContext) -> JsResult<JsUndefined>
     todo!()
 }
 
-pub fn write_array_buffer_with_borrow_mut(_: FunctionContext) -> JsResult<JsUndefined> {
-    todo!()
+pub fn write_array_buffer_with_borrow_mut(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let mut buf = cx.argument::<JsArrayBuffer>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = cx.argument::<JsNumber>(2)?.value(&mut cx) as u8;
+
+    buf.as_mut_slice(&mut cx)[i] = n;
+
+    Ok(cx.undefined())
 }
 
 pub fn increment_array_buffer_with_borrow_mut(_: FunctionContext) -> JsResult<JsUndefined> {
@@ -88,8 +98,12 @@ pub fn read_buffer_with_lock(_: FunctionContext) -> JsResult<JsNumber> {
     todo!()
 }
 
-pub fn read_buffer_with_borrow(_: FunctionContext) -> JsResult<JsNumber> {
-    todo!()
+pub fn read_buffer_with_borrow(mut cx: FunctionContext) -> JsResult<JsNumber> {
+    let buf = cx.argument::<JsBuffer>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = buf.as_slice(&cx)[i];
+
+    Ok(cx.number(n as f64))
 }
 
 pub fn sum_buffer_with_borrow(_: FunctionContext) -> JsResult<JsNumber> {
@@ -100,8 +114,14 @@ pub fn write_buffer_with_lock(_: FunctionContext) -> JsResult<JsUndefined> {
     todo!()
 }
 
-pub fn write_buffer_with_borrow_mut(_: FunctionContext) -> JsResult<JsUndefined> {
-    todo!()
+pub fn write_buffer_with_borrow_mut(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let mut buf = cx.argument::<JsBuffer>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = cx.argument::<JsNumber>(2)?.value(&mut cx) as u8;
+
+    buf.as_mut_slice(&mut cx)[i] = n;
+
+    Ok(cx.undefined())
 }
 
 pub fn increment_buffer_with_borrow_mut(_: FunctionContext) -> JsResult<JsUndefined> {
