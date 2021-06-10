@@ -110,6 +110,8 @@ pub use self::date::{DateError, DateErrorKind, JsDate};
 pub use self::error::JsError;
 #[cfg(feature = "legacy-runtime")]
 pub use self::legacy::binary::{BinaryData, BinaryViewType};
+#[cfg(feature = "napi-1")]
+pub use crate::binary::JsTypedArray;
 
 pub(crate) fn build<'a, T: Managed, F: FnOnce(&mut raw::Local) -> bool>(
     env: Env,

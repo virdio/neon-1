@@ -25,6 +25,8 @@ pub use crate::result::{JsResult, JsResultExt, NeonResult};
 pub use crate::task::Task;
 #[cfg(feature = "legacy-runtime")]
 pub use crate::types::BinaryData;
+#[cfg(feature = "napi-1")]
+pub use crate::types::JsTypedArray;
 pub use crate::types::{
     JsArray, JsArrayBuffer, JsBoolean, JsBuffer, JsError, JsFunction, JsNull, JsNumber, JsObject,
     JsString, JsUndefined, JsValue, Value,

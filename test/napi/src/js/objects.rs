@@ -70,6 +70,32 @@ pub fn increment_array_buffer_with_borrow_mut(_: FunctionContext) -> JsResult<Js
     todo!()
 }
 
+pub fn read_typed_array_with_borrow(mut cx: FunctionContext) -> JsResult<JsNumber> {
+    let buf = cx.argument::<JsTypedArray<i32>>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = buf.as_slice(&cx)[i];
+
+    Ok(cx.number(n as f64))
+}
+
+pub fn write_typed_array_with_borrow_mut(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let mut buf = cx.argument::<JsTypedArray<i32>>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = cx.argument::<JsNumber>(2)?.value(&mut cx) as i32;
+
+    buf.as_mut_slice(&mut cx)[i] = n;
+
+    Ok(cx.undefined())
+}
+
+pub fn read_u8_typed_array(mut cx: FunctionContext) -> JsResult<JsNumber> {
+    let buf = cx.argument::<JsTypedArray<u8>>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = buf.as_slice(&cx)[i];
+
+    Ok(cx.number(n as f64))
+}
+
 pub fn return_uninitialized_buffer(mut cx: FunctionContext) -> JsResult<JsBuffer> {
     let b: Handle<JsBuffer> = unsafe { JsBuffer::uninitialized(&mut cx, 16)? };
     Ok(b)

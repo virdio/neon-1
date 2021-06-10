@@ -49,22 +49,6 @@ impl JsBuffer {
 
         Handle::new_internal(JsBuffer(value))
     }
-
-    #[cfg(feature = "napi-1")]
-    pub fn as_slice<'a: 'b, 'b, C>(&'b self, cx: &'b C) -> &'b [u8]
-    where
-        C: Context<'a>,
-    {
-        unsafe { neon_runtime::buffer::as_mut_slice(cx.env().to_raw(), self.0) }
-    }
-
-    #[cfg(feature = "napi-1")]
-    pub fn as_mut_slice<'a: 'b, 'b, C>(&'b mut self, cx: &'b mut C) -> &'b mut [u8]
-    where
-        C: Context<'a>,
-    {
-        unsafe { neon_runtime::buffer::as_mut_slice(cx.env().to_raw(), self.0) }
-    }
 }
 
 impl Managed for JsBuffer {
@@ -115,22 +99,6 @@ impl JsArrayBuffer {
         let value = unsafe { neon_runtime::arraybuffer::new_external(env, data) };
 
         Handle::new_internal(JsArrayBuffer(value))
-    }
-
-    #[cfg(feature = "napi-1")]
-    pub fn as_slice<'a: 'b, 'b, C>(&'b self, cx: &'b C) -> &'b [u8]
-    where
-        C: Context<'a>,
-    {
-        unsafe { neon_runtime::arraybuffer::as_mut_slice(cx.env().to_raw(), self.0) }
-    }
-
-    #[cfg(feature = "napi-1")]
-    pub fn as_mut_slice<'a: 'b, 'b, C>(&'b mut self, cx: &'b mut C) -> &'b mut [u8]
-    where
-        C: Context<'a>,
-    {
-        unsafe { neon_runtime::arraybuffer::as_mut_slice(cx.env().to_raw(), self.0) }
     }
 }
 

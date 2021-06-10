@@ -81,6 +81,40 @@ describe('JsObject', function() {
     assert.equal((new Uint8Array(b))[3], 243);
   });
 
+  it('correctly reads a TypedArray using the borrow API', function() {
+    var b = new ArrayBuffer(32);
+    var a = new Int32Array(b, 4, 4);
+    a[0] = 49;
+    a[1] = 1350;
+    a[2] = 11;
+    a[3] = 237;
+    assert.equal(addon.read_typed_array_with_borrow(a, 0), 49);
+    assert.equal(addon.read_typed_array_with_borrow(a, 1), 1350);
+    assert.equal(addon.read_typed_array_with_borrow(a, 2), 11);
+    assert.equal(addon.read_typed_array_with_borrow(a, 3), 237);
+  });
+
+  it('correctly writes to a TypedArray using the borrow_mut API', function() {
+    var b = new ArrayBuffer(32);
+    var a = new Int32Array(b, 4, 4);
+    addon.write_typed_array_with_borrow_mut(a, 0, 43);
+    assert.equal(a[0], 43);
+    addon.write_typed_array_with_borrow_mut(a, 1, 1000);
+    assert.equal(a[1], 1000);
+    addon.write_typed_array_with_borrow_mut(a, 2, 22);
+    assert.equal(a[2], 22);
+    addon.write_typed_array_with_borrow_mut(a, 3, 243);
+    assert.equal(a[3], 243);
+  });
+
+  it('correctly reads a Buffer as a typed array', function() {
+    var a = Buffer.from([49, 135, 11, 237]);
+    assert.equal(addon.read_u8_typed_array(a, 0), 49);
+    assert.equal(addon.read_u8_typed_array(a, 1), 135);
+    assert.equal(addon.read_u8_typed_array(a, 2), 11);
+    assert.equal(addon.read_u8_typed_array(a, 3), 237);
+  });
+
   it('gets a 16-byte, uninitialized Buffer', function() {
     var b = addon.return_uninitialized_buffer();
     assert.ok(b.length === 16);

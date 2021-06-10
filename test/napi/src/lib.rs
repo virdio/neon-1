@@ -185,6 +185,12 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
         "increment_array_buffer_with_borrow_mut",
         increment_array_buffer_with_borrow_mut,
     )?;
+    cx.export_function("read_typed_array_with_borrow", read_typed_array_with_borrow)?;
+    cx.export_function(
+        "write_typed_array_with_borrow_mut",
+        write_typed_array_with_borrow_mut,
+    )?;
+    cx.export_function("read_u8_typed_array", read_u8_typed_array)?;
     cx.export_function("return_uninitialized_buffer", return_uninitialized_buffer)?;
     cx.export_function("return_buffer", return_buffer)?;
     cx.export_function("return_external_buffer", return_external_buffer)?;
