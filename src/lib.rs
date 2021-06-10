@@ -79,6 +79,7 @@
 //! [addons]: https://nodejs.org/api/addons.html
 //! [supported]: https://github.com/neon-bindings/neon#platform-support
 
+#[cfg(feature = "legacy-runtime")]
 pub mod borrow;
 pub mod context;
 #[cfg(any(
