@@ -36,8 +36,19 @@ pub fn return_array_buffer(mut cx: FunctionContext) -> JsResult<JsArrayBuffer> {
     Ok(b)
 }
 
-pub fn read_array_buffer_with_lock(_: FunctionContext) -> JsResult<JsNumber> {
-    todo!()
+pub fn read_array_buffer_with_lock<'a>(mut cx: FunctionContext<'a>) -> JsResult<JsNumber> {
+    use neon::binary::Borrow;
+
+    let buf = cx.argument::<JsTypedArray<u32>>(0)?;
+    let i = cx.argument::<JsNumber>(1)?.value(&mut cx) as usize;
+    let n = {
+        let ledger = neon::binary::Ledger::new(&mut cx);
+        let buf = buf.try_borrow(&ledger).unwrap();
+
+        buf[i]
+    };
+
+    Ok(cx.number(n))
 }
 
 pub fn read_array_buffer_with_borrow(mut cx: FunctionContext) -> JsResult<JsNumber> {

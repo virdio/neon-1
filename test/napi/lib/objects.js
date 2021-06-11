@@ -31,17 +31,17 @@ describe('JsObject', function() {
     assert.equal((new Uint32Array(b))[3], 0);
   });
 
-  it.skip('correctly reads an ArrayBuffer using the lock API', function() {
+  it('correctly reads an ArrayBuffer using the lock API', function() {
     var b = new ArrayBuffer(16);
     var a = new Uint32Array(b);
     a[0] = 47;
     a[1] = 133;
     a[2] = 9;
     a[3] = 88888888;
-    assert.equal(addon.read_array_buffer_with_lock(b, 0), 47);
-    assert.equal(addon.read_array_buffer_with_lock(b, 1), 133);
-    assert.equal(addon.read_array_buffer_with_lock(b, 2), 9);
-    assert.equal(addon.read_array_buffer_with_lock(b, 3), 88888888);
+    assert.equal(addon.read_array_buffer_with_lock(a, 0), 47);
+    assert.equal(addon.read_array_buffer_with_lock(a, 1), 133);
+    assert.equal(addon.read_array_buffer_with_lock(a, 2), 9);
+    assert.equal(addon.read_array_buffer_with_lock(a, 3), 88888888);
   });
 
   it('correctly reads an ArrayBuffer using the borrow API', function() {

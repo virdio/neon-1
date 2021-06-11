@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::ffi::c_void;
 use std::fmt::{self, Debug, Display};
-use std::ops::Range;
+use std::ops::{Deref, Range};
 
 use crate::context::Context;
 
@@ -11,10 +11,7 @@ pub struct Ledger<'cx, C> {
     shared: RefCell<Vec<Range<*const c_void>>>,
 }
 
-impl<'env: 'cx, 'cx, C> Ledger<'cx, C>
-where
-    C: Context<'env>,
-{
+impl<'cx, C> Ledger<'cx, C> {
     pub fn new(cx: &'cx mut C) -> Self {
         Self {
             cx,
@@ -77,9 +74,9 @@ where
     }
 }
 
-pub trait Borrow<C, T>
+pub trait Borrow<'env, C, T>
 where
-    for<'env> C: Context<'env>,
+    C: Context<'env>,
 {
     fn try_borrow<'b, 'cx>(
         &self,
@@ -95,6 +92,14 @@ where
 pub struct Ref<'cx: 'a, 'a, C, T> {
     ledger: &'a Ledger<'cx, C>,
     data: &'a [T],
+}
+
+impl<'cx: 'a, 'a, C, T> Deref for Ref<'cx, 'a, C, T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
 }
 
 impl<'cx: 'a, 'a, C, T> Drop for Ref<'cx, 'a, C, T> {
