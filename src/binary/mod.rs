@@ -10,6 +10,11 @@ use crate::object::Object;
 use crate::types::internal::ValueInternal;
 use crate::types::{JsArrayBuffer, JsBuffer, Value};
 
+pub use ledger::*;
+
+mod borrow;
+mod ledger;
+
 /// The standard JS [`TypedArray`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) type.
 #[repr(C)]
 #[derive(Clone, Copy)]
