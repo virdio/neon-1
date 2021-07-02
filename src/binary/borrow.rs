@@ -13,18 +13,18 @@ where
 {
     fn try_borrow<'b, 'cx>(
         &self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<Ref<'b, 'cx, C, u8>, BorrowError> {
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<Ref<'b, C, u8>, BorrowError> {
         let env = ledger.context().env().to_raw();
         let data = unsafe { neon_runtime::arraybuffer::as_mut_slice(env, self.to_raw()) };
 
         ledger.try_borrow_internal(data)
     }
 
-    fn try_borrow_mut<'b, 'cx>(
+    fn try_borrow_mut<'b>(
         &mut self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<RefMut<'b, 'cx, C, u8>, BorrowMutError> {
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<RefMut<'b, C, u8>, BorrowMutError> {
         let env = ledger.context().env().to_raw();
         let data = unsafe { neon_runtime::arraybuffer::as_mut_slice(env, self.to_raw()) };
 
@@ -36,10 +36,10 @@ impl<'env, C> Borrow<'env, C, u32> for JsTypedArray<u32>
 where
     C: Context<'env>,
 {
-    fn try_borrow<'b, 'cx>(
+    fn try_borrow<'b>(
         &self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<Ref<'b, 'cx, C, u32>, BorrowError> {
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<Ref<'b, C, u32>, BorrowError> {
         let env = ledger.context().env().to_raw();
         let value = self.to_raw();
         let data = unsafe {
@@ -51,10 +51,10 @@ where
         ledger.try_borrow_internal(data)
     }
 
-    fn try_borrow_mut<'b, 'cx>(
+    fn try_borrow_mut<'b>(
         &mut self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<RefMut<'b, 'cx, C, u32>, BorrowMutError> {
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<RefMut<'b, C, u32>, BorrowMutError> {
         let env = ledger.context().env().to_raw();
         let value = self.to_raw();
         let data = unsafe {

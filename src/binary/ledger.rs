@@ -27,7 +27,7 @@ impl<'cx, C> Ledger<'cx, C> {
     pub(super) fn try_borrow_internal<'a, T>(
         &'a self,
         data: &'a [T],
-    ) -> Result<Ref<'cx, 'a, C, T>, BorrowError> {
+    ) -> Result<Ref<'a, C, T>, BorrowError> {
         let range = data.as_ptr_range();
         let range = range.start.cast::<c_void>()..range.end.cast();
         let has_overlap = !self
@@ -48,7 +48,7 @@ impl<'cx, C> Ledger<'cx, C> {
     pub(super) fn try_borrow_mut_internal<'a, T>(
         &'a self,
         data: &'a mut [T],
-    ) -> Result<RefMut<'cx, 'a, C, T>, BorrowMutError> {
+    ) -> Result<RefMut<'a, C, T>, BorrowMutError> {
         let range = data.as_ptr_range();
         let range = range.start.cast::<c_void>()..range.end.cast();
         let has_overlap = !self
@@ -78,23 +78,23 @@ pub trait Borrow<'env, C, T>
 where
     C: Context<'env>,
 {
-    fn try_borrow<'b, 'cx>(
+    fn try_borrow<'b>(
         &self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<Ref<'b, 'cx, C, T>, BorrowError>;
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<Ref<'b, C, T>, BorrowError>;
 
     fn try_borrow_mut<'b, 'cx>(
         &mut self,
-        ledger: &'b Ledger<'cx, C>,
-    ) -> Result<RefMut<'b, 'cx, C, T>, BorrowMutError>;
+        ledger: &'b Ledger<'b, C>,
+    ) -> Result<RefMut<'b, C, T>, BorrowMutError>;
 }
 
-pub struct Ref<'cx: 'a, 'a, C, T> {
-    ledger: &'a Ledger<'cx, C>,
+pub struct Ref<'a, C, T> {
+    ledger: &'a Ledger<'a, C>,
     data: &'a [T],
 }
 
-impl<'cx: 'a, 'a, C, T> Deref for Ref<'cx, 'a, C, T> {
+impl<'a, C, T> Deref for Ref<'a, C, T> {
     type Target = [T];
 
     fn deref(&self) -> &Self::Target {
@@ -102,7 +102,7 @@ impl<'cx: 'a, 'a, C, T> Deref for Ref<'cx, 'a, C, T> {
     }
 }
 
-impl<'cx: 'a, 'a, C, T> Drop for Ref<'cx, 'a, C, T> {
+impl<'a, C, T> Drop for Ref<'a, C, T> {
     fn drop(&mut self) {
         let range = self.data.as_ptr_range();
         let range = range.start.cast::<c_void>()..range.end.cast();
@@ -113,12 +113,12 @@ impl<'cx: 'a, 'a, C, T> Drop for Ref<'cx, 'a, C, T> {
     }
 }
 
-pub struct RefMut<'cx: 'a, 'a, C, T> {
-    ledger: &'a Ledger<'cx, C>,
+pub struct RefMut<'a, C, T> {
+    ledger: &'a Ledger<'a, C>,
     data: &'a mut [T],
 }
 
-impl<'cx: 'a, 'a, C, T> Drop for RefMut<'cx, 'a, C, T> {
+impl<'a, C, T> Drop for RefMut<'a, C, T> {
     fn drop(&mut self) {
         let range = self.data.as_ptr_range();
         let range = range.start.cast::<c_void>()..range.end.cast();
